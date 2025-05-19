@@ -216,7 +216,7 @@ function endGame() {
   document.getElementById("round").style.display = "none";
   typeText("finalMessage", "* You’re finally in sync.\n * I'm here.", 60, () => {
     setTimeout(() => {
-      parent.location.hash = "signalgamecorrect";
+      parent.location.hash = "#signalgamecorrect";
     }, 800);
   });
 }
