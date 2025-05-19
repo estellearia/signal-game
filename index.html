@@ -210,27 +210,33 @@
       }, 200);
     }
 
-    function endGame() {
-      canvas.style.display = "none";
-      document.getElementById("instruction").style.display = "none";
-      document.getElementById("round").style.display = "none";
-      typeText("finalMessage", "* You’re finally in sync.\n* I'm here.");
-    }
+function endGame() {
+  canvas.style.display = "none";
+  document.getElementById("instruction").style.display = "none";
+  document.getElementById("round").style.display = "none";
+  typeText("finalMessage", "* You’re finally in sync.\n * I'm here.", 60, () => {
+    window.location.href = "#signalgamecorrect";
+  });
+}
 
-    function typeText(id, text, speed = 50) {
-      const el = document.getElementById(id);
-      el.style.display = "block";
-      el.textContent = "";
-      let i = 0;
-      function type() {
-        if (i < text.length) {
-          el.textContent += text.charAt(i);
-          i++;
-          setTimeout(type, text.charAt(i - 1) === " " ? speed / 2 : speed);
-        }
-      }
-      type();
+
+function typeText(id, text, speed = 60, callback = null) {
+  const el = document.getElementById(id);
+  el.style.display = "block";
+  el.textContent = "";
+  let i = 0;
+  function type() {
+    if (i < text.length) {
+      el.textContent += text.charAt(i);
+      i++;
+      setTimeout(type, text.charAt(i - 1) === " " ? speed / 2 : speed);
+    } else if (callback) {
+      setTimeout(callback, 800); // wait a moment before redirect
     }
+  }
+  type();
+}
+
 
     document.addEventListener("keydown", e => {
       if (e.code === "Space" && playing) {
