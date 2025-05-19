@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Signal Sync</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+    body {
+      background-color: black;
+      color: white;
+      font-family: 'Press Start 2P', monospace;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .sync-container {
+      position: relative;
+      width: 320px;
+      height: 80px;
+      margin: 50px auto;
+      border: 4px solid white;
+      overflow: hidden;
+      background: #111;
+    }
+
+    .sync-point {
+      position: absolute;
+      left: 140px;
+      top: 20px;
+      width: 40px;
+      height: 40px;
+      border: 3px solid #00ffff;
+      border-radius: 50%;
+    }
+
+    .signal {
+      position: absolute;
+      top: 30px;
+      width: 20px;
+      height: 20px;
+      background: #ff69b4;
+      border-radius: 50%;
+    }
+
+    .dialogue {
+      margin-top: 30px;
+      font-size: 10px;
+    }
+
+    .message {
+      margin-top: 40px;
+      color: #87cefa;
+    }
+  </style>
+</head>
+<body>
+  <div class="dialogue">
+    * Feel the rhythm... <br />
+    * One heartbeat at a time.
+  </div>
+
+  <div class="sync-container">
+    <div class="sync-point"></div>
+  </div>
+
+  <div class="message" id="feedback"></div>
+  <div class="message" id="finalMessage"></div>
+
+  <audio id="blip" src="https://www.fesliyanstudios.com/play-mp3/387" preload="auto"></audio>
+
+  <script>
+    const container = document.querySelector('.sync-container');
+    const feedback = document.getElementById('feedback');
+    const finalMessage = document.getElementById('finalMessage');
+    const syncPoint = 140 + 10; // center of sync-point
+    const blip = document.getElementById("blip");
+
+    let score = 0;
+    let total = 6;
+
+    function spawnSignal() {
+      const signal = document.createElement('div');
+      signal.classList.add('signal');
+      container.appendChild(signal);
+
+      let x = 320;
+      const interval = setInterval(() => {
+        x -= 4;
+        signal.style.left = x + 'px';
+
+        if (x < -20) {
+          clearInterval(interval);
+          container.removeChild(signal);
+        }
+      }, 16);
+
+      signal.dataset.position = x;
+      signal.dataset.interval = interval;
+
+      return signal;
+    }
+
+    function getCurrentSignal() {
+      return document.querySelector('.signal');
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        const signal = getCurrentSignal();
+        if (!signal) return;
+
+        const left = parseInt(signal.style.left);
+        const center = left + 10;
+        const distance = Math.abs(center - syncPoint);
+
+        if (distance < 15) {
+          score++;
+          feedback.innerText = '* Synced!';
+          blip.currentTime = 0;
+          blip.play();
+        } else {
+          feedback.innerText = '* Missed...';
+        }
+
+        setTimeout(() => (feedback.innerText = ''), 800);
+        clearInterval(signal.dataset.interval);
+        signal.remove();
+      }
+    });
+
+    function startGame() {
+      let i = 0;
+      const spawn = setInterval(() => {
+        spawnSignal();
+        i++;
+        if (i === total) clearInterval(spawn);
+      }, 1600);
+
+      setTimeout(() => {
+        finalMessage.innerText = '* Your hearts are now in sync.';
+        setTimeout(() => {
+          window.location.hash = "#signalcomplete";
+        }, 2000);
+      }, total * 1600 + 1000);
+    }
+
+    startGame();
+  </script>
+
+  <div id="signalcomplete"></div>
+</body>
+</html>
