@@ -1,154 +1,133 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Signal Sync</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+<meta charset="UTF-8">
+<title>Signal Sync</title>
+<style>
+body {
+  background: black;
+  color: white;
+  font-family: 'Press Start 2P', monospace;
+  text-align: center;
+  padding: 20px;
+}
 
-    body {
-      background-color: black;
-      color: white;
-      font-family: 'Press Start 2P', monospace;
-      text-align: center;
-      padding: 20px;
-    }
+#gameCanvas {
+  border: 3px solid white;
+  margin: 20px auto;
+  display: block;
+  background-color: #111;
+}
 
-    .sync-container {
-      position: relative;
-      width: 320px;
-      height: 80px;
-      margin: 50px auto;
-      border: 4px solid white;
-      overflow: hidden;
-      background: #111;
-    }
+#instruction {
+  font-size: 10px;
+  margin-top: 16px;
+  color: #87cefa;
+}
 
-    .sync-point {
-      position: absolute;
-      left: 140px;
-      top: 20px;
-      width: 40px;
-      height: 40px;
-      border: 3px solid #00ffff;
-      border-radius: 50%;
-    }
+#round {
+  margin-top: 10px;
+  font-size: 10px;
+  color: #ffeb3b;
+}
 
-    .signal {
-      position: absolute;
-      top: 30px;
-      width: 20px;
-      height: 20px;
-      background: #ff69b4;
-      border-radius: 50%;
-    }
-
-    .dialogue {
-      margin-top: 30px;
-      font-size: 10px;
-    }
-
-    .message {
-      margin-top: 40px;
-      color: #87cefa;
-    }
-  </style>
+button {
+  background: none;
+  border: 2px solid white;
+  color: white;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  padding: 8px;
+  margin-top: 16px;
+  cursor: pointer;
+}
+</style>
 </head>
 <body>
-  <div class="dialogue">
-    * Feel the rhythm... <br />
-    * One heartbeat at a time.
-  </div>
+<h2>SIGNAL SYNC</h2>
+<canvas id="gameCanvas" width="300" height="150"></canvas>
+<div id="round">Round 1</div>
+<div id="instruction">Press SPACE when the dot aligns with the center line!</div>
+<button onclick="startGame()">Start</button>
 
-  <div class="sync-container">
-    <div class="sync-point"></div>
-  </div>
+<audio id="blip" src="https://www.fesliyanstudios.com/play-mp3/387" preload="auto"></audio>
+<audio id="winSound" src="https://www.fesliyanstudios.com/play-mp3/6675" preload="auto"></audio>
 
-  <div class="message" id="feedback"></div>
-  <div class="message" id="finalMessage"></div>
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+const blip = document.getElementById("blip");
+const winSound = document.getElementById("winSound");
 
-  <audio id="blip" src="https://www.fesliyanstudios.com/play-mp3/387" preload="auto"></audio>
+let rounds = [
+  { speed: 2, tolerance: 15, msg: "Press SPACE when the dot aligns with the center line!" },
+  { speed: 3.5, tolerance: 10, msg: "The pace is faster now. Time it just right!" },
+  { speed: 5, tolerance: 6, msg: "Final sync. Trust your instinct." }
+];
 
-  <script>
-    const container = document.querySelector('.sync-container');
-    const feedback = document.getElementById('feedback');
-    const finalMessage = document.getElementById('finalMessage');
-    const syncPoint = 140 + 10; // center of sync-point
-    const blip = document.getElementById("blip");
+let currentRound = 0;
+let x = 0;
+let direction = 1;
+let running = false;
+let success = false;
 
-    let score = 0;
-    let total = 6;
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "white";
+  ctx.fillRect(canvas.width / 2 - 2, 0, 4, canvas.height); // center line
 
-    function spawnSignal() {
-      const signal = document.createElement('div');
-      signal.classList.add('signal');
-      container.appendChild(signal);
+  ctx.beginPath();
+  ctx.arc(x, canvas.height / 2, 10, 0, 2 * Math.PI);
+  ctx.fillStyle = "cyan";
+  ctx.fill();
 
-      let x = 320;
-      const interval = setInterval(() => {
-        x -= 4;
-        signal.style.left = x + 'px';
+  if (running) {
+    x += rounds[currentRound].speed * direction;
+    if (x > canvas.width - 10 || x < 10) direction *= -1;
+    requestAnimationFrame(draw);
+  }
+}
 
-        if (x < -20) {
-          clearInterval(interval);
-          container.removeChild(signal);
-        }
-      }, 16);
+function startGame() {
+  document.querySelector("button").style.display = "none";
+  document.getElementById("round").innerText = `Round ${currentRound + 1}`;
+  document.getElementById("instruction").innerText = rounds[currentRound].msg;
+  x = 10;
+  direction = 1;
+  success = false;
+  running = true;
+  draw();
+}
 
-      signal.dataset.position = x;
-      signal.dataset.interval = interval;
-
-      return signal;
-    }
-
-    function getCurrentSignal() {
-      return document.querySelector('.signal');
-    }
-
-    document.addEventListener('keydown', (e) => {
-      if (e.code === 'Space') {
-        const signal = getCurrentSignal();
-        if (!signal) return;
-
-        const left = parseInt(signal.style.left);
-        const center = left + 10;
-        const distance = Math.abs(center - syncPoint);
-
-        if (distance < 15) {
-          score++;
-          feedback.innerText = '* Synced!';
-          blip.currentTime = 0;
-          blip.play();
-        } else {
-          feedback.innerText = '* Missed...';
-        }
-
-        setTimeout(() => (feedback.innerText = ''), 800);
-        clearInterval(signal.dataset.interval);
-        signal.remove();
-      }
-    });
-
-    function startGame() {
-      let i = 0;
-      const spawn = setInterval(() => {
-        spawnSignal();
-        i++;
-        if (i === total) clearInterval(spawn);
-      }, 1600);
-
+window.addEventListener("keydown", (e) => {
+  if (!running || success) return;
+  if (e.code === "Space") {
+    const center = canvas.width / 2;
+    const tolerance = rounds[currentRound].tolerance;
+    if (Math.abs(x - center) < tolerance) {
+      blip.currentTime = 0;
+      blip.play();
+      success = true;
+      running = false;
       setTimeout(() => {
-        finalMessage.innerText = '* Your hearts are now in sync.';
-        setTimeout(() => {
-          window.location.hash = "#signalcomplete";
-        }, 2000);
-      }, total * 1600 + 1000);
+        currentRound++;
+        if (currentRound < rounds.length) {
+          document.querySelector("button").innerText = "Next Round";
+          document.querySelector("button").style.display = "inline-block";
+        } else {
+          document.getElementById("round").innerText = "★ All rounds synced! You're in tune. ★";
+          document.getElementById("instruction").innerText = "Thank you for listening. I'm here.";
+          winSound.play();
+        }
+      }, 500);
+    } else {
+      document.getElementById("instruction").innerText = "Missed it! Wait for the next pass...";
+      setTimeout(() => {
+        document.getElementById("instruction").innerText = rounds[currentRound].msg;
+      }, 1200);
     }
-
-    startGame();
-  </script>
-
-  <div id="signalcomplete"></div>
+  }
+});
+</script>
 </body>
 </html>
