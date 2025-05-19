@@ -209,7 +209,7 @@
         overlay.style.display = "none";
       }, 200);
     }
-
+    
 function endGame() {
   canvas.style.display = "none";
   document.getElementById("instruction").style.display = "none";
@@ -219,14 +219,15 @@ function endGame() {
   finalMessage.style.opacity = "1";
   finalMessage.style.transition = "opacity 1s ease";
 
-typeText("finalMessage", "* You’re finally in sync!\n* Opening message...", 60, () => {
-  setTimeout(() => {
-    finalMessage.style.opacity = "0";
+  typeText("finalMessage", "* You’re finally in sync!\n* Opening message...", 60, () => {
     setTimeout(() => {
-      window.top.location.href = "https://frdffsdx.carrd.co/#signalgamecorrect";
-    }, 1000); // match the fade-out duration
-  }, 1000); // pause before fade starts
-});
+      finalMessage.style.opacity = "0";
+      setTimeout(() => {
+        window.top.location.href = "https://frdffsdx.carrd.co/#signalgamecorrect";
+      }, 1000); // match the fade-out duration
+    }, 1000); // pause before fade starts
+  });
+}
 
 
 
