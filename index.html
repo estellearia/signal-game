@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Signal Sync</title>
   <style>
     body {
@@ -14,11 +14,13 @@
       justify-content: center;
       min-height: 100vh;
       margin: 0;
+      position: relative;
+      overflow: hidden;
     }
     canvas {
       image-rendering: pixelated;
       background: #111;
-      display: block;
+      display: none; /* hidden initially */
       margin: 20px auto;
       border: 3px solid white;
     }
@@ -27,11 +29,13 @@
       margin-top: 10px;
       color: #87cefa;
       text-align: center;
+      display: none; /* hidden initially */
     }
     #round {
       color: #ffeb3b;
       font-size: 10px;
       margin-top: 20px;
+      display: none; /* hidden initially */
     }
     #finalMessage, #errorMessage {
       display: none;
@@ -58,13 +62,31 @@
       display: none;
       z-index: 999;
     }
+    #startButton {
+      background: #222;
+      color: #fff;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 16px;
+      padding: 15px 30px;
+      border: 3px solid white;
+      cursor: pointer;
+      user-select: none;
+      border-radius: 8px;
+      transition: background 0.3s ease;
+    }
+    #startButton:hover {
+      background: #555;
+    }
   </style>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
 </head>
 <body>
+
+  <button id="startButton">START</button>
+
   <canvas id="game" width="400" height="100"></canvas>
   <div id="round">Round 1 / 3</div>
-  <div id="instruction">Press ENTER when the arrow hits the middle bar!</div>
+  <div id="instruction">Press SPACE when the arrow hits the middle bar!</div>
   <div id="errorMessage"></div>
   <div id="finalMessage"></div>
   <div id="overlay"></div>
@@ -73,25 +95,28 @@
   <audio id="failSound" src="https://www.soundjay.com/button/beep-05.wav" preload="auto"></audio>
 
   <script>
+    const startButton = document.getElementById('startButton');
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
     const sound = document.getElementById("hitSound");
     const failSound = document.getElementById("failSound");
     const errorEl = document.getElementById("errorMessage");
     const overlay = document.getElementById("overlay");
+    const instructionEl = document.getElementById("instruction");
+    const roundEl = document.getElementById("round");
 
-  const rounds = [
-  { speed: 1.5, arrows: 5 },
-  { speed: 2.2, arrows: 7 },
-  { speed: 3, arrows: 9 }
-];
+    const rounds = [
+      { speed: 1.5, arrows: 5 },
+      { speed: 2.2, arrows: 7 },
+      { speed: 3, arrows: 9 }
+    ];
 
     let currentRound = 0;
     let arrows = [];
     let frame = 0;
     let hits = 0;
     let total = 0;
-    let playing = true;
+    let playing = false; // start disabled until user clicks start
 
     function spawnArrow() {
       const side = Math.random() > 0.5 ? "left" : "right";
@@ -148,7 +173,7 @@
       setTimeout(() => {
         currentRound++;
         if (currentRound < rounds.length) {
-          document.getElementById("round").textContent = `Round ${currentRound + 1} / 3`;
+          roundEl.textContent = `Round ${currentRound + 1} / 3`;
           resetRound();
         } else {
           endGame();
@@ -186,8 +211,8 @@
 
     function endGame() {
       canvas.style.display = "none";
-      document.getElementById("instruction").style.display = "none";
-      document.getElementById("round").style.display = "none";
+      instructionEl.style.display = "none";
+      roundEl.style.display = "none";
       typeText("finalMessage", "* You’re finally in sync.\n* I'm here.");
     }
 
@@ -206,19 +231,28 @@
       type();
     }
 
- document.addEventListener("keydown", e => {
-  if (e.code === "Enter" && playing) {
-    const center = arrows.find(a => Math.abs(a.x - 200) < 15);
-    if (center) {
-      sound.currentTime = 0;
-      sound.play();
-      hits++;
-      arrows.splice(arrows.indexOf(center), 1);
-    }
-  }
-});
+    // Wait for start button click
+    startButton.addEventListener('click', () => {
+      startButton.style.display = 'none';
+      canvas.style.display = 'block';
+      instructionEl.style.display = 'block';
+      roundEl.style.display = 'block';
+      playing = true;
+      loop();
+    });
 
-    loop();
+    // Use spacebar to hit arrows, only if playing
+    document.addEventListener("keydown", e => {
+      if (e.code === "Space" && playing) {
+        const center = arrows.find(a => Math.abs(a.x - 200) < 15);
+        if (center) {
+          sound.currentTime = 0;
+          sound.play();
+          hits++;
+          arrows.splice(arrows.indexOf(center), 1);
+        }
+      }
+    });
   </script>
 </body>
 </html>
