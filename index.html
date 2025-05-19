@@ -15,15 +15,13 @@
       min-height: 100vh;
       margin: 0;
     }
-   canvas {
-  image-rendering: pixelated;
-  background: #111;
-  display: block;
-  margin: 20px auto;
-  border: 3px solid white;
-  width: 100%;
-  max-width: 600px;
-}
+    canvas {
+      image-rendering: pixelated;
+      background: #111;
+      display: block;
+      margin: 20px auto;
+      border: 3px solid white;
+    }
     #instruction {
       font-size: 10px;
       margin-top: 10px;
@@ -64,7 +62,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 </head>
 <body>
- <canvas id="game" width="600" height="150"></canvas>
+  <canvas id="game" width="400" height="100"></canvas>
   <div id="round">Round 1 / 3</div>
   <div id="instruction">Press SPACE when the arrow hits the middle bar!</div>
   <div id="errorMessage"></div>
@@ -82,12 +80,11 @@
     const errorEl = document.getElementById("errorMessage");
     const overlay = document.getElementById("overlay");
 
-    const rounds = [
+  const rounds = [
   { speed: 1.5, arrows: 5 },
   { speed: 2.2, arrows: 7 },
   { speed: 3, arrows: 9 }
 ];
-
 
     let currentRound = 0;
     let arrows = [];
@@ -211,8 +208,7 @@
 
     document.addEventListener("keydown", e => {
       if (e.code === "Space" && playing) {
-        const center = arrows.find(a => Math.abs(a.x - 200) < 25);
-
+        const center = arrows.find(a => Math.abs(a.x - 200) < 15);
         if (center) {
           sound.currentTime = 0;
           sound.play();
