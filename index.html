@@ -50,31 +50,34 @@
       white-space: pre-wrap;
     }
     #overlay {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0.8);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      user-select: none;
-    }
-    #startButton {
-      background: #222;
-      color: #fff;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 24px;
-      padding: 20px 60px;
-      border: 3px solid white;
-      cursor: pointer;
-      border-radius: 12px;
-      transition: background 0.3s ease;
-    }
-    #startButton:hover {
-      background: #555;
-    }
-  </style>
+    position: absolute;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    user-select: none;
+  }
+
+  #startButton {
+    background: #222;
+    color: #fff;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 16px;
+    padding: 12px 40px;
+    border: 2px solid white;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background 0.3s ease;
+    box-shadow: 0 0 6px #00ffff88;
+  }
+
+  #startButton:hover {
+    background: #444;
+  }
+</style>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
 </head>
 <body>
