@@ -79,174 +79,199 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
 </head>
 <body>
-  <canvas id="game" width="400" height="100"></canvas>
-  <div id="round">Round 1 / 3</div>
-  <div id="instruction">Press SPACE when the arrow hits the middle bar!</div>
-  <div id="errorMessage"></div>
-  <div id="finalMessage"></div>
-  <div id="overlay">
-    <button id="startButton">START</button>
+  <div id="gameContainer" style="position: relative; width: 400px; margin: auto;">
+    <canvas id="game" width="400" height="100" style="display: block; background:#111; border: 3px solid white;"></canvas>
+
+    <div id="overlay" style="
+      position: absolute;
+      top: 0; left: 0;
+      width: 400px; height: 100px;
+      background: rgba(0,0,0,0.85);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    ">
+      <button id="startButton" style="
+        background: #222;
+        border: 3px solid #87cefa;
+        color: #87cefa;
+        font-family: 'Press Start 2P', monospace;
+        font-size: 14px;
+        padding: 10px 25px;
+        cursor: pointer;
+        transition: background 0.3s, color 0.3s;
+      ">
+        START
+      </button>
+    </div>
   </div>
+
+  <div id="round" style="text-align:center; margin-top:10px; color:#ffeb3b; font-family: 'Press Start 2P', monospace; font-size: 10px;">Round 1 / 3</div>
+  <div id="instruction" style="text-align:center; margin-top:5px; color:#87cefa; font-family: 'Press Start 2P', monospace; font-size: 10px;">Press SPACE when the arrow hits the middle bar!</div>
+  <div id="errorMessage" style="text-align:center; margin-top:15px; color:#ff4d4d; font-family: 'Press Start 2P', monospace; font-size: 10px;"></div>
+  <div id="finalMessage" style="text-align:center; margin-top:30px; color:#ffeb3b; font-family: 'Press Start 2P', monospace; font-size: 12px; display:none;"></div>
 
   <audio id="hitSound" src="https://www.fesliyanstudios.com/play-mp3/387" preload="auto"></audio>
   <audio id="failSound" src="https://www.soundjay.com/button/beep-05.wav" preload="auto"></audio>
 
-  <script>
-    const canvas = document.getElementById("game");
-    const ctx = canvas.getContext("2d");
-    const sound = document.getElementById("hitSound");
-    const failSound = document.getElementById("failSound");
-    const errorEl = document.getElementById("errorMessage");
-    const overlay = document.getElementById("overlay");
-    const startButton = document.getElementById("startButton");
+<script>
+  // your existing JS here, just remove the old #overlay style and replace with new overlay inside #gameContainer
 
-    const rounds = [
-      { speed: 1.5, arrows: 5 },
-      { speed: 2.2, arrows: 7 },
-      { speed: 3, arrows: 9 }
-    ];
+  const canvas = document.getElementById("game");
+  const ctx = canvas.getContext("2d");
+  const sound = document.getElementById("hitSound");
+  const failSound = document.getElementById("failSound");
+  const errorEl = document.getElementById("errorMessage");
+  const overlay = document.getElementById("overlay");
+  const startButton = document.getElementById("startButton");
 
-    let currentRound = 0;
-    let arrows = [];
-    let frame = 0;
-    let hits = 0;
-    let total = 0;
-    let playing = false; // start false so arrows don't move before start
+  const rounds = [
+    { speed: 1.5, arrows: 5 },
+    { speed: 2.2, arrows: 7 },
+    { speed: 3, arrows: 9 }
+  ];
 
-    function spawnArrow() {
-      const side = Math.random() > 0.5 ? "left" : "right";
-      arrows.push({ x: side === "left" ? 0 : 400, dir: side === "left" ? 1 : -1 });
+  let currentRound = 0;
+  let arrows = [];
+  let frame = 0;
+  let hits = 0;
+  let total = 0;
+  let playing = false;
+
+  function spawnArrow() {
+    const side = Math.random() > 0.5 ? "left" : "right";
+    arrows.push({ x: side === "left" ? 0 : 400, dir: side === "left" ? 1 : -1 });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, 400, 100);
+    ctx.fillStyle = "white";
+    ctx.fillRect(195, 0, 10, 100);
+
+    arrows.forEach(a => {
+      ctx.fillStyle = "cyan";
+      ctx.beginPath();
+      ctx.moveTo(a.x, 50);
+      ctx.lineTo(a.x + (a.dir * -10), 40);
+      ctx.lineTo(a.x + (a.dir * -10), 60);
+      ctx.fill();
+    });
+  }
+
+  function update() {
+    if (!playing) return;
+
+    arrows.forEach(a => a.x += a.dir * rounds[currentRound].speed);
+
+    if (arrows.some(a => (a.dir === 1 && a.x > 215) || (a.dir === -1 && a.x < 185))) {
+      failRound();
+      return;
     }
 
-    function draw() {
-      ctx.clearRect(0, 0, 400, 100);
-      ctx.fillStyle = "white";
-      ctx.fillRect(195, 0, 10, 100); // Middle zone
+    arrows = arrows.filter(a => a.x > -20 && a.x < 420);
+    frame++;
 
-      arrows.forEach(a => {
-        ctx.fillStyle = "cyan";
-        ctx.beginPath();
-        ctx.moveTo(a.x, 50);
-        ctx.lineTo(a.x + (a.dir * -10), 40);
-        ctx.lineTo(a.x + (a.dir * -10), 60);
-        ctx.fill();
-      });
+    if (frame % 60 === 0 && total < rounds[currentRound].arrows) {
+      spawnArrow();
+      total++;
     }
 
-    function update() {
-      if (!playing) return;
-
-      arrows.forEach(a => a.x += a.dir * rounds[currentRound].speed);
-
-      // Check for missed arrows
-      if (arrows.some(a => (a.dir === 1 && a.x > 215) || (a.dir === -1 && a.x < 185))) {
-        failRound();
-        return;
-      }
-
-      arrows = arrows.filter(a => a.x > -20 && a.x < 420);
-      frame++;
-
-      if (frame % 60 === 0 && total < rounds[currentRound].arrows) {
-        spawnArrow();
-        total++;
-      }
-
-      if (hits >= rounds[currentRound].arrows) {
-        nextRound();
-      }
+    if (hits >= rounds[currentRound].arrows) {
+      nextRound();
     }
+  }
 
-    function loop() {
-      update();
-      draw();
-      requestAnimationFrame(loop);
-    }
+  function loop() {
+    update();
+    draw();
+    requestAnimationFrame(loop);
+  }
 
-    function nextRound() {
-      playing = false;
-      setTimeout(() => {
-        currentRound++;
-        if (currentRound < rounds.length) {
-          document.getElementById("round").textContent = `Round ${currentRound + 1} / 3`;
-          resetRound();
-        } else {
-          endGame();
-        }
-      }, 1000);
-    }
-
-    function resetRound() {
-      arrows = [];
-      hits = 0;
-      total = 0;
-      frame = 0;
-      playing = true;
-    }
-
-    function failRound() {
-      playing = false;
-      failSound.currentTime = 0;
-      failSound.play();
-      flashOverlay();
-      typeText("errorMessage", "* Try again!", 40);
-      setTimeout(() => {
-        errorEl.textContent = "";
-        errorEl.style.display = "none";
+  function nextRound() {
+    playing = false;
+    setTimeout(() => {
+      currentRound++;
+      if (currentRound < rounds.length) {
+        document.getElementById("round").textContent = `Round ${currentRound + 1} / 3`;
         resetRound();
-      }, 1500);
-    }
-
-    function flashOverlay() {
-      overlay.style.background = "rgba(255, 0, 0, 0.5)";
-      overlay.style.display = "flex";
-      setTimeout(() => {
-        overlay.style.background = "rgba(0, 0, 0, 0.8)";
-        overlay.style.display = "none";
-      }, 200);
-    }
-
-    function endGame() {
-      canvas.style.display = "none";
-      document.getElementById("instruction").style.display = "none";
-      document.getElementById("round").style.display = "none";
-      typeText("finalMessage", "* You’re finally in sync.\n* I'm here.");
-    }
-
-    function typeText(id, text, speed = 50) {
-      const el = document.getElementById(id);
-      el.style.display = "block";
-      el.textContent = "";
-      let i = 0;
-      function type() {
-        if (i < text.length) {
-          el.textContent += text.charAt(i);
-          i++;
-          setTimeout(type, text.charAt(i - 1) === " " ? speed / 2 : speed);
-        }
+      } else {
+        endGame();
       }
-      type();
-    }
+    }, 1000);
+  }
 
-    document.addEventListener("keydown", e => {
-      if (e.code === "Space" && playing) {
-        e.preventDefault(); // prevent scroll on space
-        const center = arrows.find(a => Math.abs(a.x - 200) < 15);
-        if (center) {
-          sound.currentTime = 0;
-          sound.play();
-          hits++;
-          arrows.splice(arrows.indexOf(center), 1);
-        }
-      }
-    });
+  function resetRound() {
+    arrows = [];
+    hits = 0;
+    total = 0;
+    frame = 0;
+    playing = true;
+  }
 
-    startButton.addEventListener("click", () => {
+  function failRound() {
+    playing = false;
+    failSound.currentTime = 0;
+    failSound.play();
+    flashOverlay();
+    typeText("errorMessage", "* Try again!", 40);
+    setTimeout(() => {
+      errorEl.textContent = "";
+      errorEl.style.display = "none";
+      resetRound();
+    }, 1500);
+  }
+
+  function flashOverlay() {
+    overlay.style.background = "rgba(255, 0, 0, 0.5)";
+    overlay.style.display = "flex";
+    setTimeout(() => {
+      overlay.style.background = "rgba(0, 0, 0, 0.85)";
       overlay.style.display = "none";
-      playing = true;
-    });
+    }, 200);
+  }
 
-    loop();
-  </script>
+  function endGame() {
+    canvas.style.display = "none";
+    document.getElementById("instruction").style.display = "none";
+    document.getElementById("round").style.display = "none";
+    typeText("finalMessage", "* You’re finally in sync.\n* I'm here.");
+  }
+
+  function typeText(id, text, speed = 50) {
+    const el = document.getElementById(id);
+    el.style.display = "block";
+    el.textContent = "";
+    let i = 0;
+    function type() {
+      if (i < text.length) {
+        el.textContent += text.charAt(i);
+        i++;
+        setTimeout(type, text.charAt(i - 1) === " " ? speed / 2 : speed);
+      }
+    }
+    type();
+  }
+
+  document.addEventListener("keydown", e => {
+    if (e.code === "Space" && playing) {
+      e.preventDefault();
+      const center = arrows.find(a => Math.abs(a.x - 200) < 15);
+      if (center) {
+        sound.currentTime = 0;
+        sound.play();
+        hits++;
+        arrows.splice(arrows.indexOf(center), 1);
+      }
+    }
+  });
+
+  startButton.addEventListener("click", () => {
+    overlay.style.display = "none";
+    playing = true;
+  });
+
+  loop();
+</script>
 </body>
 </html>
