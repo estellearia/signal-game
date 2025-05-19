@@ -36,7 +36,6 @@
     #finalMessage, #errorMessage {
       display: none;
       font-size: 12px;
-      color: #ff4d4d;
       margin-top: 30px;
       max-width: 80%;
       text-align: center;
@@ -44,6 +43,20 @@
     }
     #finalMessage {
       color: #ffeb3b;
+    }
+    #errorMessage {
+      color: #ff4d4d;
+    }
+    #overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(255, 0, 0, 0.5);
+      pointer-events: none;
+      display: none;
+      z-index: 999;
     }
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -54,13 +67,18 @@
   <div id="instruction">Press SPACE when the arrow hits the middle bar!</div>
   <div id="errorMessage"></div>
   <div id="finalMessage"></div>
+  <div id="overlay"></div>
+
   <audio id="hitSound" src="https://www.fesliyanstudios.com/play-mp3/387" preload="auto"></audio>
+  <audio id="failSound" src="https://www.soundjay.com/button/beep-05.wav" preload="auto"></audio>
 
   <script>
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
     const sound = document.getElementById("hitSound");
+    const failSound = document.getElementById("failSound");
     const errorEl = document.getElementById("errorMessage");
+    const overlay = document.getElementById("overlay");
 
     const rounds = [
       { speed: 2, arrows: 5 },
@@ -100,7 +118,7 @@
 
       arrows.forEach(a => a.x += a.dir * rounds[currentRound].speed);
 
-      // Check for missed arrows (passed center)
+      // Check for missed arrows
       if (arrows.some(a => (a.dir === 1 && a.x > 215) || (a.dir === -1 && a.x < 185))) {
         failRound();
         return;
@@ -148,12 +166,22 @@
 
     function failRound() {
       playing = false;
+      failSound.currentTime = 0;
+      failSound.play();
+      flashOverlay();
       typeText("errorMessage", "* Try again!", 40);
       setTimeout(() => {
-        document.getElementById("errorMessage").textContent = "";
-        document.getElementById("errorMessage").style.display = "none";
+        errorEl.textContent = "";
+        errorEl.style.display = "none";
         resetRound();
       }, 1500);
+    }
+
+    function flashOverlay() {
+      overlay.style.display = "block";
+      setTimeout(() => {
+        overlay.style.display = "none";
+      }, 200);
     }
 
     function endGame() {
