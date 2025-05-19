@@ -214,7 +214,7 @@ function endGame() {
   canvas.style.display = "none";
   document.getElementById("instruction").style.display = "none";
   document.getElementById("round").style.display = "none";
-  typeText("finalMessage", "* You’re finally in sync.\n * I'm here.", 60, () => {
+  typeText("finalMessage", "* You’re finally in sync.\n * Opening message...", 60, () => {
     setTimeout(() => {
       parent.location.hash = "#signalgamecorrect";
     }, 800);
