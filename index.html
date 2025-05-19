@@ -64,7 +64,7 @@
 <body>
   <canvas id="game" width="400" height="100"></canvas>
   <div id="round">Round 1 / 3</div>
-  <div id="instruction">Press SPACE when the arrow hits the middle bar!</div>
+  <div id="instruction">Press ENTER when the arrow hits the middle bar!</div>
   <div id="errorMessage"></div>
   <div id="finalMessage"></div>
   <div id="overlay"></div>
@@ -206,17 +206,17 @@
       type();
     }
 
-    document.addEventListener("keydown", e => {
-      if (e.code === "Space" && playing) {
-        const center = arrows.find(a => Math.abs(a.x - 200) < 15);
-        if (center) {
-          sound.currentTime = 0;
-          sound.play();
-          hits++;
-          arrows.splice(arrows.indexOf(center), 1);
-        }
-      }
-    });
+ document.addEventListener("keydown", e => {
+  if (e.code === "Enter" && playing) {
+    const center = arrows.find(a => Math.abs(a.x - 200) < 15);
+    if (center) {
+      sound.currentTime = 0;
+      sound.play();
+      hits++;
+      arrows.splice(arrows.indexOf(center), 1);
+    }
+  }
+});
 
     loop();
   </script>
