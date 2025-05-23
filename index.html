@@ -136,6 +136,7 @@
       transition: background 0.2s, color 0.2s;
       z-index: 2001;
       text-shadow: 0 1px 0 #000;
+      display: none;
     }
     #skipBtn:hover {
       background: #fff;
@@ -348,12 +349,16 @@
 
     startButton.addEventListener("click", () => {
       overlay.style.display = "none";
+      skipBtn.style.display = "block";
       playing = true;
     });
 
     skipBtn.addEventListener("click", () => {
       window.top.location.href = "https://estellearia.github.io/aria-messages/fragment4.html";
     });
+
+    // Hide skip button until game starts
+    skipBtn.style.display = "none";
 
     loop();
   </script>
