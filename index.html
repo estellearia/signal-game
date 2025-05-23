@@ -94,54 +94,28 @@
       background: rgba(0, 0, 0, 0.85);
       display: flex;
       justify-content: center;
-      align-items: flex-start;
-      padding-top: 23vh;
+      align-items: center;
       z-index: 1000;
       user-select: none;
       flex-direction: column;
       pointer-events: auto;
       transition: background 0.3s;
     }
-    #overlayInner {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      width: 100vw;
-    }
-    #overlayAvatar {
-      width: 58px;
-      height: 58px;
-      image-rendering: pixelated;
-      background: #111;
-      border: 2px solid #fff;
-      border-radius: 8px;
-      margin-bottom: 12px;
-      margin-top: -8px;
-      box-shadow: 0 0 6px #333;
-    }
-    #overlayText {
-      color: #87cefa;
-      font-size: 11px;
-      margin-bottom: 18px;
-      text-align: center;
-      line-height: 1.9;
-      max-width: 360px;
-      letter-spacing: 0.08em;
-      text-shadow: 0 1px 0 #222;
-    }
     #startButton {
       background: #191933;
       border: 3px solid #87cefa;
       color: #87cefa;
       font-family: 'Press Start 2P', monospace;
-      font-size: 14px;
-      padding: 10px 32px;
+      font-size: 18px;
+      padding: 18px 50px;
       cursor: pointer;
-      border-radius: 8px;
+      border-radius: 10px;
       transition: background 0.2s, color 0.2s;
-      margin-top: 10px;
       letter-spacing: 0.12em;
       text-shadow: 0 1px 0 #191933;
+      display: block;
+      margin: 0 auto;
+      box-shadow: 0 0 16px #222;
     }
     #startButton:hover {
       background: #87cefa;
@@ -150,7 +124,6 @@
     @media (max-width: 520px) {
       #uiContainer { padding: 14vw 2vw 14vw 2vw; min-width: 0; max-width: 99vw;}
       canvas { width: 94vw !important; min-width: unset; }
-      #overlayText { max-width: 98vw; }
     }
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
@@ -166,16 +139,7 @@
     </div>
   </div>
   <div id="overlay">
-    <div id="overlayInner">
-      <img id="overlayAvatar" src="https://64.media.tumblr.com/e38cd32d189fd45102a73a3f9dc6b9ac/9a98a57c72a06121-d8/s250x400/1bfeddb38d0ef253be539d8223e27d7a6838ffb2.gif" alt="Mewby Avatar" />
-      <div id="overlayText">
-        <b>Mewby</b>:<br>
-        Stay sharp and keep your paws ready!<br>
-        Sync with the rhythm—press SPACE when the arrow lines up with the center bar.<br>
-        Let’s see if you can get in tune!
-      </div>
-      <button id="startButton">START</button>
-    </div>
+    <button id="startButton">START</button>
   </div>
   <audio id="hitSound" src="https://www.fesliyanstudios.com/play-mp3/387" preload="auto"></audio>
   <audio id="failSound" src="https://www.soundjay.com/button/beep-05.wav" preload="auto"></audio>
