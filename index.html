@@ -172,7 +172,7 @@
       function type() {
         if (i < text.length) {
           el.textContent += text[i++];
-          setTimeout(type, text[i-1] === "\n" ? 200 : 28);
+          setTimeout(type, text[i-1] === "\n" ? 200 : 50);
         } else if (cb) {
           cb();
         }
