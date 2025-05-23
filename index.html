@@ -4,100 +4,181 @@
   <meta charset="UTF-8" />
   <title>Signal Sync</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
     html, body {
       height: 100%;
       margin: 0;
       padding: 0;
-      background: black;
-      color: white;
+      background: #131319;
+      color: #fff;
       font-family: 'Press Start 2P', monospace;
+      width: 100vw;
+      min-height: 100vh;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    #centerer {
+      min-height: 100vh;
+      min-width: 100vw;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    #uiContainer {
+      background: #181828;
+      border: 4px solid #fff;
+      border-radius: 18px;
+      box-shadow: 0 0 24px #222, 0 0 0 4px #111;
+      padding: 34px 30px 34px 30px;
+      min-width: 340px;
+      max-width: 96vw;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      overflow: hidden; /* prevent scrolling before start */
     }
     canvas {
       image-rendering: pixelated;
       background: #111;
       display: block;
-      margin: 20px auto;
-      border: 3px solid white;
-    }
-    #instruction {
-      font-size: 10px;
-      margin-top: 10px;
-      color: #87cefa;
-      text-align: center;
+      margin: 20px auto 6px auto;
+      border: 3px solid #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 8px #1e1e32;
     }
     #round {
       color: #ffeb3b;
-      font-size: 10px;
-      margin-top: 20px;
+      font-size: 12px;
+      margin-top: 0;
+      margin-bottom: 10px;
+      text-align: center;
+      letter-spacing: 1.5px;
+      text-shadow: 0 0 3px #333;
     }
-
-    #finalMessage,  #errorMessage {
-  display: none;
-  font-size: 10px;
-  margin-top: 30px;
-  max-width: 80%;
-  text-align: center;
-  white-space: pre-wrap;
-  color: #ffeb3b;
-  line-height: 1.8; /* <-- Add this */
-}
-    #finalMessage {
+    #instruction {
+      font-size: 11px;
+      color: #87cefa;
+      text-align: center;
+      margin-bottom: 14px;
+      margin-top: 2px;
+      letter-spacing: 0.6px;
+      text-shadow: 0 1px 0 #222;
+    }
+    #errorMessage, #finalMessage {
+      display: none;
+      font-size: 12px;
+      margin-top: 18px;
+      max-width: 82%;
+      text-align: center;
+      white-space: pre-wrap;
       color: #ffeb3b;
+      line-height: 2;
+      font-family: 'Press Start 2P', monospace;
+      letter-spacing: 0.08em;
     }
     #errorMessage {
       color: #ff4d4d;
+      text-shadow: 0 0 1px #222;
+    }
+    #finalMessage {
+      color: #ffeb3b;
+      text-shadow: 0 0 2px #000, 0 0 8px #ffeb3b44;
     }
     #overlay {
       position: fixed;
       top: 0; left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(0, 0, 0, 0.8);
+      background: rgba(0, 0, 0, 0.85);
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      padding-top: 420px;  /* adjust this value as needed */
+      padding-top: 23vh;
       z-index: 1000;
       user-select: none;
+      flex-direction: column;
+      pointer-events: auto;
+      transition: background 0.3s;
     }
-
-    
+    #overlayInner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100vw;
+    }
+    #overlayAvatar {
+      width: 58px;
+      height: 58px;
+      image-rendering: pixelated;
+      background: #111;
+      border: 2px solid #fff;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      margin-top: -8px;
+      box-shadow: 0 0 6px #333;
+    }
+    #overlayText {
+      color: #87cefa;
+      font-size: 11px;
+      margin-bottom: 18px;
+      text-align: center;
+      line-height: 1.9;
+      max-width: 360px;
+      letter-spacing: 0.08em;
+      text-shadow: 0 1px 0 #222;
+    }
     #startButton {
-      background: #222;
+      background: #191933;
       border: 3px solid #87cefa;
       color: #87cefa;
       font-family: 'Press Start 2P', monospace;
       font-size: 14px;
-      padding: 10px 25px;
+      padding: 10px 32px;
       cursor: pointer;
-      transition: background 0.3s, color 0.3s;
+      border-radius: 8px;
+      transition: background 0.2s, color 0.2s;
+      margin-top: 10px;
+      letter-spacing: 0.12em;
+      text-shadow: 0 1px 0 #191933;
     }
-    
     #startButton:hover {
       background: #87cefa;
-      color: #222;
+      color: #191933;
+    }
+    @media (max-width: 520px) {
+      #uiContainer { padding: 14vw 2vw 14vw 2vw; min-width: 0; max-width: 99vw;}
+      canvas { width: 94vw !important; min-width: unset; }
+      #overlayText { max-width: 98vw; }
     }
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
 </head>
 <body>
-  <canvas id="game" width="400" height="100"></canvas>
-  <div id="round">Round 1 / 3</div>
-  <div id="instruction">Press SPACE when the arrow hits the middle bar!</div>
-  <div id="errorMessage"></div>
-  <div id="finalMessage"></div>
-  <div id="overlay">
-    <button id="startButton">START</button>
+  <div id="centerer">
+    <div id="uiContainer">
+      <div id="round">Round 1 / 4</div>
+      <div id="instruction">Press SPACE when the arrow hits the middle bar!</div>
+      <canvas id="game" width="400" height="100"></canvas>
+      <div id="errorMessage"></div>
+      <div id="finalMessage"></div>
+    </div>
   </div>
-
+  <div id="overlay">
+    <div id="overlayInner">
+      <img id="overlayAvatar" src="https://64.media.tumblr.com/e38cd32d189fd45102a73a3f9dc6b9ac/9a98a57c72a06121-d8/s250x400/1bfeddb38d0ef253be539d8223e27d7a6838ffb2.gif" alt="Mewby Avatar" />
+      <div id="overlayText">
+        <b>Mewby</b>:<br>
+        Stay sharp and keep your paws ready!<br>
+        Sync with the rhythm—press SPACE when the arrow lines up with the center bar.<br>
+        Let’s see if you can get in tune!
+      </div>
+      <button id="startButton">START</button>
+    </div>
+  </div>
   <audio id="hitSound" src="https://www.fesliyanstudios.com/play-mp3/387" preload="auto"></audio>
   <audio id="failSound" src="https://www.soundjay.com/button/beep-05.wav" preload="auto"></audio>
-
   <script>
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
@@ -106,11 +187,15 @@
     const errorEl = document.getElementById("errorMessage");
     const overlay = document.getElementById("overlay");
     const startButton = document.getElementById("startButton");
+    const roundEl = document.getElementById("round");
+    const instructionEl = document.getElementById("instruction");
 
+    // More difficult rounds: faster speed, more arrows, smaller "hit window"
     const rounds = [
-      { speed: 1.5, arrows: 5 },
-      { speed: 2.2, arrows: 7 },
-      { speed: 3, arrows: 9 }
+      { speed: 2.1, arrows: 6, hitWindow: 15 },
+      { speed: 2.7, arrows: 8, hitWindow: 11 },
+      { speed: 3.35, arrows: 11, hitWindow: 9 },
+      { speed: 4.25, arrows: 13, hitWindow: 7 }
     ];
 
     let currentRound = 0;
@@ -118,7 +203,7 @@
     let frame = 0;
     let hits = 0;
     let total = 0;
-    let playing = false; // start false so arrows don't move before start
+    let playing = false;
 
     function spawnArrow() {
       const side = Math.random() > 0.5 ? "left" : "right";
@@ -127,38 +212,43 @@
 
     function draw() {
       ctx.clearRect(0, 0, 400, 100);
-      ctx.fillStyle = "white";
-      ctx.fillRect(195, 0, 10, 100); // Middle zone
-
+      // Center bar
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(195, 0, 10, 100);
+      ctx.fillStyle = "#00f0ff";
+      ctx.globalAlpha = 0.13;
+      ctx.fillRect(175, 0, 50, 100);
+      ctx.globalAlpha = 1;
+      // Arrows
       arrows.forEach(a => {
-        ctx.fillStyle = "cyan";
+        ctx.fillStyle = "#35e5f5";
         ctx.beginPath();
         ctx.moveTo(a.x, 50);
-        ctx.lineTo(a.x + (a.dir * -10), 40);
-        ctx.lineTo(a.x + (a.dir * -10), 60);
+        ctx.lineTo(a.x + (a.dir * -13), 40);
+        ctx.lineTo(a.x + (a.dir * -13), 60);
+        ctx.closePath();
         ctx.fill();
+        // Pixel effect tip
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(a.x - 2 * a.dir, 48, 3, 5);
       });
     }
 
     function update() {
       if (!playing) return;
-
       arrows.forEach(a => a.x += a.dir * rounds[currentRound].speed);
-
-      // Check for missed arrows
-      if (arrows.some(a => (a.dir === 1 && a.x > 215) || (a.dir === -1 && a.x < 185))) {
+      // Miss condition: arrow passes center (with small buffer)
+      if (arrows.some(a => (a.dir === 1 && a.x > 200 + rounds[currentRound].hitWindow) ||
+                           (a.dir === -1 && a.x < 200 - rounds[currentRound].hitWindow))) {
         failRound();
         return;
       }
-
       arrows = arrows.filter(a => a.x > -20 && a.x < 420);
       frame++;
-
-      if (frame % 60 === 0 && total < rounds[currentRound].arrows) {
+      if (frame % Math.max(36, 100 - currentRound * 9) === 0 && total < rounds[currentRound].arrows) {
         spawnArrow();
         total++;
       }
-
       if (hits >= rounds[currentRound].arrows) {
         nextRound();
       }
@@ -175,7 +265,12 @@
       setTimeout(() => {
         currentRound++;
         if (currentRound < rounds.length) {
-          document.getElementById("round").textContent = `Round ${currentRound + 1} / 3`;
+          roundEl.textContent = `Round ${currentRound + 1} / ${rounds.length}`;
+          instructionEl.textContent = currentRound === 1
+            ? "Now it’s faster, and your hit window is smaller…"
+            : currentRound === 2
+            ? "Wow, you’re really syncing up—let’s go even harder!"
+            : "Final round! Can you keep up with the signal?";
           resetRound();
         } else {
           endGame();
@@ -189,6 +284,8 @@
       total = 0;
       frame = 0;
       playing = true;
+      errorEl.style.display = "none";
+      errorEl.textContent = "";
     }
 
     function failRound() {
@@ -196,68 +293,63 @@
       failSound.currentTime = 0;
       failSound.play();
       flashOverlay();
-      typeText("errorMessage", "* Try again!", 40);
+      typeText("errorMessage", "Oops! Missed it—try again from the start!", 32);
       setTimeout(() => {
         errorEl.textContent = "";
         errorEl.style.display = "none";
         resetRound();
-      }, 1500);
+      }, 1400);
     }
 
     function flashOverlay() {
-      overlay.style.background = "rgba(255, 0, 0, 0.5)";
+      overlay.style.background = "rgba(255, 0, 0, 0.23)";
       overlay.style.display = "flex";
       setTimeout(() => {
-        overlay.style.background = "rgba(0, 0, 0, 0.8)";
+        overlay.style.background = "rgba(0, 0, 0, 0.85)";
         overlay.style.display = "none";
       }, 200);
     }
-    
-function endGame() {
-  canvas.style.display = "none";
-  document.getElementById("instruction").style.display = "none";
-  document.getElementById("round").style.display = "none";
 
-  const finalMessage = document.getElementById("finalMessage");
-  finalMessage.style.opacity = "1";
-  finalMessage.style.transition = "opacity 1s ease";
-
-  typeText("finalMessage", "You’re finally in sync!", 60, () => {
-    setTimeout(() => {
-      finalMessage.style.opacity = "0";
-      setTimeout(() => {
-        window.top.location.href = "https://estellearia.github.io/aria-messages/fragment1.html";
-      }, 1000); // match the fade-out duration
-    }, 1000); // pause before fade starts
-  });
-}
-
-
-
-
-function typeText(id, text, speed = 60, callback = null) {
-  const el = document.getElementById(id);
-  el.style.display = "block";
-  el.textContent = "";
-  let i = 0;
-  function type() {
-    if (i < text.length) {
-      el.textContent += text.charAt(i);
-      i++;
-      setTimeout(type, text.charAt(i - 1) === " " ? speed / 2 : speed);
-    } else if (callback) {
-      callback();
+    function endGame() {
+      canvas.style.display = "none";
+      instructionEl.style.display = "none";
+      roundEl.style.display = "none";
+      const finalMessage = document.getElementById("finalMessage");
+      finalMessage.style.opacity = "1";
+      finalMessage.style.transition = "opacity 1s ease";
+      typeText("finalMessage", "You’re finally in sync!", 50, () => {
+        setTimeout(() => {
+          finalMessage.style.opacity = "0";
+          setTimeout(() => {
+            window.top.location.href = "https://estellearia.github.io/aria-messages/fragment4.html";
+          }, 900);
+        }, 900);
+      });
     }
-  }
-  type();
-}
 
-
+    function typeText(id, text, speed = 60, callback = null) {
+      const el = document.getElementById(id);
+      el.style.display = "block";
+      el.textContent = "";
+      let i = 0;
+      function type() {
+        if (i < text.length) {
+          el.textContent += text.charAt(i);
+          i++;
+          setTimeout(type, text.charAt(i - 1) === " " ? speed / 2 : speed);
+        } else if (callback) {
+          callback();
+        }
+      }
+      type();
+    }
 
     document.addEventListener("keydown", e => {
       if (e.code === "Space" && playing) {
-        e.preventDefault(); // prevent scroll on space
-        const center = arrows.find(a => Math.abs(a.x - 200) < 15);
+        e.preventDefault();
+        const center = arrows.find(a =>
+          Math.abs(a.x - 200) < rounds[currentRound].hitWindow
+        );
         if (center) {
           sound.currentTime = 0;
           sound.play();
