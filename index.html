@@ -122,19 +122,19 @@
       color: #111;
     }
     #skipBtn {
-      position: absolute;
-      top: 10px;
-      right: 12px;
+      position: fixed;
+      top: 18px;
+      right: 22px;
       background: #111;
       border: 2px solid #fff;
       color: #fff;
       font-family: 'Press Start 2P', monospace;
-      font-size: 10px;
-      padding: 4px 12px;
+      font-size: 11px;
+      padding: 4px 15px;
       cursor: pointer;
       border-radius: 0;
       transition: background 0.2s, color 0.2s;
-      z-index: 2000;
+      z-index: 2001;
       text-shadow: 0 1px 0 #000;
     }
     #skipBtn:hover {
@@ -144,15 +144,15 @@
     @media (max-width: 520px) {
       #uiContainer { padding: 8vw 2vw 8vw 2vw; min-width: 0; max-width: 99vw;}
       canvas { width: 92vw !important; min-width: unset; }
-      #skipBtn { top: 6px; right: 6px; font-size: 9px; padding: 3px 9px; }
+      #skipBtn { top: 8px; right: 8px; font-size: 9px; padding: 3px 9px; }
     }
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
 </head>
 <body>
+  <button id="skipBtn" title="Skip the game">Skip</button>
   <div id="centerer">
     <div id="uiContainer">
-      <button id="skipBtn" title="Skip the game">Skip</button>
       <div id="round">Round 1 / 4</div>
       <div id="instruction">Press SPACE when the arrow hits the middle bar!</div>
       <canvas id="game" width="400" height="100"></canvas>
