@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Signal Sync</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: #111;
+      color: #fff;
+      font-family: 'Press Start 2P', monospace;
+      width: 100vw;
+      min-height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    #centerer {
+      min-height: 100vh;
+      min-width: 100vw;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    #uiContainer {
+      background: #181818;
+      border: 3px solid #fff;
+      border-radius: 6px;
+      box-shadow: 0 0 0 6px #000;
+      padding: 22px 18px 24px 18px;
+      min-width: 300px;
+      max-width: 97vw;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+    canvas {
+      image-rendering: pixelated;
+      background: #111;
+      display: block;
+      margin: 18px auto 6px auto;
+      border: 2px solid #fff;
+      border-radius: 3px;
+      box-shadow: 0 0 6px #000;
+    }
+    #round {
+      color: #ffe066;
+      font-size: 10px;
+      margin-bottom: 10px;
+      text-align: center;
+      text-shadow: 0 0 2px #222;
+      letter-spacing: 0.5px;
+    }
+    #instruction {
+      font-size: 9px;
+      color: #87cefa;
+      text-align: center;
+      margin-bottom: 8px;
+      margin-top: 2px;
+      letter-spacing: 0.3px;
+      text-shadow: 0 1px 0 #111;
+    }
+    #errorMessage, #finalMessage {
+      display: none;
+      font-size: 10px;
+      margin-top: 16px;
+      max-width: 82%;
+      text-align: center;
+      white-space: pre-wrap;
+      color: #ffe066;
+      line-height: 2;
+      font-family: 'Press Start 2P', monospace;
+      letter-spacing: 0.06em;
+    }
+    #errorMessage {
+      color: #ff4d4d;
+      text-shadow: 0 0 1px #222;
+    }
+    #finalMessage {
+      color: #ffe066;
+      text-shadow: 0 0 2px #000, 0 0 8px #ffe06644;
+    }
+    #overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.95);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      user-select: none;
+      pointer-events: auto;
+      transition: background 0.3s;
+    }
+    #startButton {
+      background: #111;
+      border: 2px solid #fff;
+      color: #fff;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 13px;
+      padding: 8px 25px;
+      cursor: pointer;
+      border-radius: 0;
+      transition: background 0.2s, color 0.2s;
+      margin: 0 auto;
+      box-shadow: 0 0 0 3px #000;
+      display: block;
+      letter-spacing: 0.05em;
+      text-shadow: 0 1px 0 #000;
+    }
+    #startButton:hover {
+      background: #fff;
+      color: #111;
+    }
+    #skipBtn {
+      position: fixed;
+      top: 18px;
+      right: 22px;
+      background: #111;
+      border: 2px solid #fff;
+      color: #fff;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 11px;
+      padding: 4px 15px;
+      cursor: pointer;
+      border-radius: 0;
+      transition: background 0.2s, color 0.2s;
+      z-index: 2001;
+      text-shadow: 0 1px 0 #000;
+      display: none;
+    }
+    #skipBtn:hover {
+      background: #fff;
+      color: #111;
+    }
+    @media (max-width: 520px) {
+      #uiContainer { padding: 8vw 2vw 8vw 2vw; min-width: 0; max-width: 99vw;}
+      canvas { width: 92vw !important; min-width: unset; }
+      #skipBtn { top: 8px; right: 8px; font-size: 9px; padding: 3px 9px; }
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <button id="skipBtn" title="Skip the game">Skip</button>
+  <div id="centerer">
+    <div id="uiContainer">
+      <div id="round">Round 1 / 3</div>
+      <div id="instruction">Press SPACE or CLICK when the arrow hits the middle bar!</div>
+      <canvas id="game" width="400" height="100"></canvas>
+      <div id="errorMessage"></div>
+      <div id="finalMessage"></div>
+    </div>
+  </div>
+  <div id="overlay">
+    <button id="startButton">START</button>
+  </div>
+  <audio id="hitSound" src="https://www.fesliyanstudios.com/play-mp3/387" preload="auto"></audio>
+  <audio id="failSound" src="https://www.soundjay.com/button/beep-05.wav" preload="auto"></audio>
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    const sound = document.getElementById("hitSound");
+    const failSound = document.getElementById("failSound");
+    const errorEl = document.getElementById("errorMessage");
+    const overlay = document.getElementById("overlay");
+    const startButton = document.getElementById("startButton");
+    const roundEl = document.getElementById("round");
+    const instructionEl = document.getElementById("instruction");
+    const skipBtn = document.getElementById("skipBtn");
+
+    // 3 easier rounds!
+    const rounds = [
+      { speed: 1.3, arrows: 4, hitWindow: 24 },
+      { speed: 1.7, arrows: 6, hitWindow: 18 },
+      { speed: 2.2, arrows: 8, hitWindow: 13 }
+    ];
+
+    let currentRound = 0;
+    let arrows = [];
+    let frame = 0;
+    let hits = 0;
+    let total = 0;
+    let playing = false;
+
+    function spawnArrow() {
+      const side = Math.random() > 0.5 ? "left" : "right";
+      arrows.push({ x: side === "left" ? 0 : 400, dir: side === "left" ? 1 : -1 });
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, 400, 100);
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(195, 0, 10, 100);
+      ctx.fillStyle = "#00f0ff";
+      ctx.globalAlpha = 0.13;
+      ctx.fillRect(175, 0, 50, 100);
+      ctx.globalAlpha = 1;
+      arrows.forEach(a => {
+        ctx.fillStyle = "#35e5f5";
+        ctx.beginPath();
+        ctx.moveTo(a.x, 50);
+        ctx.lineTo(a.x + (a.dir * -13), 40);
+        ctx.lineTo(a.x + (a.dir * -13), 60);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(a.x - 2 * a.dir, 48, 3, 5);
+      });
+    }
+
+    function update() {
+      if (!playing) return;
+      arrows.forEach(a => a.x += a.dir * rounds[currentRound].speed);
+      if (arrows.some(a => (a.dir === 1 && a.x > 200 + rounds[currentRound].hitWindow) ||
+                           (a.dir === -1 && a.x < 200 - rounds[currentRound].hitWindow))) {
+        failRound();
+        return;
+      }
+      arrows = arrows.filter(a => a.x > -20 && a.x < 420);
+      frame++;
+      if (frame % Math.max(36, 100 - currentRound * 9) === 0 && total < rounds[currentRound].arrows) {
+        spawnArrow();
+        total++;
+      }
+      if (hits >= rounds[currentRound].arrows) {
+        nextRound();
+      }
+    }
+
+    function loop() {
+      update();
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    function nextRound() {
+      playing = false;
+      setTimeout(() => {
+        currentRound++;
+        if (currentRound < rounds.length) {
+          roundEl.textContent = `Round ${currentRound + 1} / ${rounds.length}`;
+          instructionEl.textContent = currentRound === 1
+            ? "A bit faster this time. You can do it!"
+            : "Final round! Stay focused!";
+          resetRound();
+        } else {
+          endGame();
+        }
+      }, 1000);
+    }
+
+    function resetRound() {
+      arrows = [];
+      hits = 0;
+      total = 0;
+      frame = 0;
+      playing = true;
+      errorEl.style.display = "none";
+      errorEl.textContent = "";
+    }
+
+    function failRound() {
+      playing = false;
+      failSound.currentTime = 0;
+      failSound.play();
+      flashOverlay();
+      typeText("errorMessage", "Oops! Missed it—try again from the start!", 32);
+      setTimeout(() => {
+        errorEl.textContent = "";
+        errorEl.style.display = "none";
+        resetRound();
+      }, 1400);
+    }
+
+    function flashOverlay() {
+      overlay.style.background = "rgba(255, 0, 0, 0.23)";
+      overlay.style.display = "flex";
+      setTimeout(() => {
+        overlay.style.background = "rgba(0, 0, 0, 0.95)";
+        overlay.style.display = "none";
+      }, 200);
+    }
+
+    function endGame() {
+      canvas.style.display = "none";
+      instructionEl.style.display = "none";
+      roundEl.style.display = "none";
+      const finalMessage = document.getElementById("finalMessage");
+      finalMessage.style.opacity = "1";
+      finalMessage.style.transition = "opacity 1s ease";
+      typeText("finalMessage", "You’re finally in sync!", 50, () => {
+        setTimeout(() => {
+          finalMessage.style.opacity = "0";
+          setTimeout(() => {
+            window.top.location.href = "https://estellearia.github.io/aria-messages/fragment4.html";
+          }, 900);
+        }, 900);
+      });
+    }
+
+    function typeText(id, text, speed = 60, callback = null) {
+      const el = document.getElementById(id);
+      el.style.display = "block";
+      el.textContent = "";
+      let i = 0;
+      function type() {
+        if (i < text.length) {
+          el.textContent += text.charAt(i);
+          i++;
+          setTimeout(type, text.charAt(i - 1) === " " ? speed / 2 : speed);
+        } else if (callback) {
+          callback();
+        }
+      }
+      type();
+    }
+
+    // SPACEBAR trigger
+    document.addEventListener("keydown", e => {
+      if (e.code === "Space" && playing) {
+        e.preventDefault();
+        hitAction();
+      }
+    });
+
+    // CLICK trigger
+    canvas.addEventListener("click", () => {
+      if (playing) hitAction();
+    });
+
+    // TOUCH trigger (for mobile)
+    canvas.addEventListener("touchstart", (e) => {
+      if (playing) {
+        e.preventDefault();
+        hitAction();
+      }
+    }, {passive: false});
+
+    // Shared hit logic
+    function hitAction() {
+      const center = arrows.find(a =>
+        Math.abs(a.x - 200) < rounds[currentRound].hitWindow
+      );
+      if (center) {
+        sound.currentTime = 0;
+        sound.play();
+        hits++;
+        arrows.splice(arrows.indexOf(center), 1);
+      }
+    }
+
+    startButton.addEventListener("click", () => {
+      overlay.style.display = "none";
+      skipBtn.style.display = "block";
+      playing = true;
+    });
+
+    skipBtn.addEventListener("click", () => {
+      window.top.location.href = "https://estellearia.github.io/aria-messages/fragment1.html";
+    });
+
+    skipBtn.style.display = "none";
+    loop();
+  </script>
+</body>
+</html>
